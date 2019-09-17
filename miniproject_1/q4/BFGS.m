@@ -1,19 +1,21 @@
-function [ output_args ] = BFGS( f , x0, H0, epsi)
+function [ iterates, gradients ] = BFGS( f , x0, H0, epsi)
     %BFGS Broydon Fletcher Goldfarb Shanno
     %   @param {f} Symbolic Objective function
     %   @param {x0} Starting point
     %   @param {H0} initial hessian approximation
     %   @param {epsi} Tolerance for the norm of the gradient
     k = 0;
-    H = cell(2,1), x = H;
+    H = cell(2,1); x = H;
     n = length(symvar(f));
     H{1} = H0;
     x{1} = x0;
-    global iterates;
-    %while norm(double(subs( gradient(f), {x1, x2}, {} ))) < epsi
-    
-    while k < 50
+    iterates = [];
+    gradients = [];
+    while norm(gradf(f,x{1}')) > epsi  
+    %while k < 50
         iterates = [ iterates , x{1}];
+        gradients = [gradients, norm(gradf(f,x{1}'))];
+        
         % Computing the search direction 
         p = - H{1} * gradf(f, x{1}');
         
