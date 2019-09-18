@@ -1,12 +1,11 @@
-function [ iterates, gradients ] = SR1(f, x0, B0, delta0, eps, del_max)
+function [ iterates, gradients, deltas ] = SR1( x0, B0, delta0, eps, del_max, max_iter)
     % SR1 Trust region
-    % @param {f} Symbolic Objective Function
     % @param {x0} Starting point
     % @param {B0} Initial hessian approixmation
     % @param {delta0} trust region radius
     % @param {eps} convergance tolerance > 0
     % @param {del_max} max delta
-
+    % @param {max_iters} max_iterations
     k = 0;
     B = cell(2,1); x = B ; delta = B;
     eta = 1e-4; % between 0 and 1e-3
@@ -16,40 +15,40 @@ function [ iterates, gradients ] = SR1(f, x0, B0, delta0, eps, del_max)
     delta{1} = delta0;
     iterates = [];
     gradients = [];
-    global hessian_f grad_f;
-    %while  norm(gradf(f, x{1}')) > eps
-    while k < 10
-        norm(gradf(f,x{1}'))
+    deltas = [];
+
+    global func grad_f;
+    while  norm(grad_f(x{1})) > eps & k < max_iter
+    %while k < 10
+        norm(grad_f(x{1}))
         iterates = [ iterates , x{1}];
-        gradients = [ gradients, norm(gradf(f, x{1}'))];
-        
-        g = gradf(f,x{1}');
-        p_B = hessian_f(x{1})\g;
+        gradients = [ gradients, norm(grad_f(x{1}))];
+        deltas = [deltas, delta{1}];
+        g = grad_f(x{1});
+        p_B = -inv(B{1}) * g;
 
         % START 1 : Taken from Q2 
-        % if norm(p_B) <= delta{1}
-        %     p_k = p_B;
-        % else
-        %     p_U = -g'*g/(g'*B{1}*g)*g;
-        %     if norm(p_U) >= delta{1}
-        %         p_k = delta{1}*p_U/norm(p_U);
-        %     else
-        %         % Find tau as positive root of polynomial
-        %         p_C = p_B - p_U;
-        %         coeffs = [norm(p_C)^2, 2*p_C'*p_U, (norm(p_U))^2-delta{1}^2];
-        %         tau = max(roots(coeffs));
-        %         p_k = p_U + tau*p_C;
-        %     end
-        % end
+        if norm(p_B) <= delta{1}
+            p_k = p_B;
+        else
+            p_U = -g'*g/(g'*B{1}*g)*g;
+            if norm(p_U) >= delta{1}
+                p_k = delta{1}*p_U/norm(p_U);
+            else
+                % Find tau as positive root of polynomial
+                p_C = p_B - p_U;
+                coeffs = [norm(p_C)^2, 2*p_C'*p_U, (norm(p_U))^2-delta{1}^2];
+                tau = max(roots(coeffs));
+                p_k = p_U + tau*p_C;
+            end
+        end
         % END 1
 
-        % sk = p_k
-        %sk = - inv( B{1}) * gradf(f,x{1}');
-        sk= SH(hessian_f(x{1}), grad_f(x{1}), x{1}, delta{1});
+        sk = p_k;
 
-        y_k = gradf(f, (x{1} + sk)') - gradf(f, x{1}' );
-        ared = evalf(f, x{1}') - evalf(f, (x{1} + sk)');
-        pred = - ( gradf(f, x{1}')' * sk  + 0.5 * sk'* B{1} * sk);
+        y_k = grad_f( x{1} + sk) - grad_f(x{1});
+        ared = func(x{1}') - func(x{1} + sk);
+        pred = - ( grad_f( x{1})' * sk  + 0.5 * sk'* B{1} * sk);
         rho = ared/pred ;
 
         if rho > eta
