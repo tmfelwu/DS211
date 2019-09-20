@@ -19,11 +19,12 @@ max_iter = 300;
 iter = 0;               
 tol = 1E-10; %stopping tolerance           
 change = inf;           
-
+dgradients = [];
 x_all = x_k; 
 
 while change > tol && iter <= max_iter
    
+    dgradients(:,end+1) = norm(grad_f(x_k))
     B = hessian_f(x_k);
     g = grad_f(x_k);
     f_k = f(x_k);
@@ -37,7 +38,7 @@ while change > tol && iter <= max_iter
     else
         p_U = -g'*g/(g'*B*g)*g;
         if norm(p_U) >= delta
-            p_k = delta*p_U/np_U;
+            p_k = delta*p_U/norm(p_U);
         else
             % Find tau as positive root of polynomial
             p_C = p_B - p_U;

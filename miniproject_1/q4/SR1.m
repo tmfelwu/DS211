@@ -61,7 +61,7 @@ function [ iterates, gradients, deltas ] = SR1( x0, B0, delta0, eps, del_max, ma
             if norm(sk) <= 0.8 * delta{1}
                 delta{2} = delta{1};
             else
-                delta{2} = min(2 * delta{1}, del_max);
+                delta{2} = 2 * delta{1};
             end
         elseif rho >= 0.1 & rho <= 0.75
             delta{2} = delta{1};

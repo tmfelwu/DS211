@@ -29,7 +29,7 @@ hold off
 
 %% SR1 Trust region
 
-[iteratesSR1, gradientsSR1, deltas ] = SR1([-1,-1]', eye(2), 2, 1e-4, 8, 50)
+[iteratesSR1, gradientsSR1, deltas ] = SR1([-1,-1]', eye(2), 1, 1e-4, 8, 50)
 
 %% SR1 convergence plot
 figure
@@ -49,9 +49,10 @@ figure
 set(gca, 'YScale', 'log')
 hold on;
 load NewtonGradientNorm.mat
+load DoglegGradients.mat
 plot(Grad_Norm, 'bd-', 'DisplayName','Newton Descent')
 plot(gradients,'r*-', 'DisplayName','BFGS')
-%plot(gradientsSR1,'go-','DisplayName','SR1 Trust Region')
+plot(dgradients,'go-','DisplayName','Dogleg')
 xlabel('k , Number of Iterations')
 ylabel('||grad f||')
 hold off;
